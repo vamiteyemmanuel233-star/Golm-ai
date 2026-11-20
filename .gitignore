@@ -1,0 +1,13 @@
+node_modules
+dist
+*.tsbuildinfo
+.vite
+coverage
+# Secrets — never commit your AI key
+server/.env
+.env
+.env.*
+!.env.example
+!server/.env.example
+.DS_Store
+Thumbs.db

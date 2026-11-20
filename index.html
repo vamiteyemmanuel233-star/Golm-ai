@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en-GH">
+  <head>
+    <meta charset="UTF-8" />
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="description" content="GOLM AI — Smart Finance. Smarter Future. Track income and spending in Ghana cedis, set budgets and savings goals, and get clear insights. Powered by Vamit Golm Company Limited." />
+    <meta name="application-name" content="GOLM AI" />
+    <meta name="author" content="Vamit Golm Company Limited" />
+    <meta name="theme-color" content="#0b1a3d" />
+    <meta property="og:title" content="GOLM AI — Smart Finance. Smarter Future." />
+    <meta property="og:description" content="Personal finance for Ghana: budgets, savings goals, Mobile Money tracking and clear insights." />
+    <meta property="og:type" content="website" />
+    <title>GOLM AI — Smart Finance. Smarter Future.</title>
+    <style>
+      /* Shown instantly while the app's JavaScript loads; React replaces it. */
+      .boot { min-height: 100vh; display: grid; place-items: center; background: #0b1a3d; color: #fff; font-family: 'Segoe UI', system-ui, -apple-system, sans-serif; }
+      .boot__inner { display: flex; flex-direction: column; align-items: center; gap: 14px; }
+      .boot__mark { width: 64px; height: 64px; animation: boot-pulse 1.4s ease-in-out infinite; }
+      .boot__name { font-size: 22px; font-weight: 800; letter-spacing: 0.04em; }
+      .boot__tag { font-size: 13px; color: #9fb4ea; }
+      @keyframes boot-pulse { 50% { transform: scale(0.92); opacity: 0.75; } }
+      @media (prefers-reduced-motion: reduce) { .boot__mark { animation: none; } }
+    </style>
+  </head>
+  <body>
+    <div id="root">
+      <div class="boot" role="status" aria-label="Loading GOLM AI">
+        <div class="boot__inner">
+          <img class="boot__mark" src="/favicon.svg" alt="" />
+          <div class="boot__name">GOLM AI</div>
+          <div class="boot__tag">Smart Finance. Smarter Future.</div>
+        </div>
+      </div>
+    </div>
+    <noscript>GOLM AI needs JavaScript to run.</noscript>
+    <script type="module" src="/src/main.tsx"></script>
+  </body>
+</html>
