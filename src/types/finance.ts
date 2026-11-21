@@ -63,6 +63,8 @@ export type Theme = 'light' | 'dark';
 
 export interface Settings {
   theme: Theme;
+  /** True only after the user picks a theme themselves. Until then GOLM AI opens in light mode. */
+  themeChosen: boolean;
   /** The user explicitly agreed to send a summary of their data to the AI provider. */
   aiConsent: boolean;
 }

@@ -10,17 +10,9 @@ interface SettingsContextValue extends Settings {
 
 const SettingsContext = createContext<SettingsContextValue | null>(null);
 
-function systemTheme(): Theme {
-  try {
-    return window.matchMedia('(prefers-color-scheme: dark)').matches ? 'dark' : 'light';
-  } catch {
-    return 'light';
-  }
-}
-
 export function SettingsProvider({ children }: { children: ReactNode }) {
   const [{ store }] = useState(getBrowserStore);
-  const [settings, setSettings] = useState<Settings>(() => loadSettings(store, systemTheme()));
+  const [settings, setSettings] = useState<Settings>(() => loadSettings(store));
 
   useEffect(() => {
     document.documentElement.dataset.theme = settings.theme;
@@ -31,8 +23,8 @@ export function SettingsProvider({ children }: { children: ReactNode }) {
   const value = useMemo<SettingsContextValue>(
     () => ({
       ...settings,
-      setTheme: (theme) => setSettings((s) => ({ ...s, theme })),
-      toggleTheme: () => setSettings((s) => ({ ...s, theme: s.theme === 'dark' ? 'light' : 'dark' })),
+      setTheme: (theme) => setSettings((s) => ({ ...s, theme, themeChosen: true })),
+      toggleTheme: () => setSettings((s) => ({ ...s, theme: s.theme === 'dark' ? 'light' : 'dark', themeChosen: true })),
       setAiConsent: (aiConsent) => setSettings((s) => ({ ...s, aiConsent })),
     }),
     [settings],

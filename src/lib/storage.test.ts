@@ -65,8 +65,15 @@ describe('storage', () => {
 
   it('loads settings with safe defaults', () => {
     const store = createMemoryStore({ [SETTINGS_KEY]: '{"theme":"neon","aiConsent":"yes"}' });
-    expect(loadSettings(store, 'light')).toEqual({ theme: 'light', aiConsent: false });
-    saveSettings(store, { theme: 'dark', aiConsent: true });
-    expect(loadSettings(store, 'light')).toEqual({ theme: 'dark', aiConsent: true });
+    expect(loadSettings(store)).toEqual({ theme: 'light', themeChosen: false, aiConsent: false });
+    saveSettings(store, { theme: 'dark', themeChosen: true, aiConsent: true });
+    expect(loadSettings(store)).toEqual({ theme: 'dark', themeChosen: true, aiConsent: true });
+  });
+
+  it('opens in light mode unless the user chose a theme', () => {
+    expect(loadSettings(createMemoryStore()).theme).toBe('light');
+    // Older versions auto-saved the device's dark theme without the user choosing it
+    const autoSaved = createMemoryStore({ [SETTINGS_KEY]: '{"theme":"dark","aiConsent":true}' });
+    expect(loadSettings(autoSaved)).toEqual({ theme: 'light', themeChosen: false, aiConsent: true });
   });
 });

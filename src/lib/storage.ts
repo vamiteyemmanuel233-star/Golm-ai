@@ -138,15 +138,22 @@ export function saveData(store: KeyValueStore, data: FinanceData): { ok: true } 
   }
 }
 
-export function loadSettings(store: KeyValueStore, fallbackTheme: Theme): Settings {
-  const defaults: Settings = { theme: fallbackTheme, aiConsent: false };
+/** GOLM AI opens in light (white) mode unless the user has chosen another theme. */
+export const DEFAULT_THEME: Theme = 'light';
+
+export function loadSettings(store: KeyValueStore): Settings {
+  const defaults: Settings = { theme: DEFAULT_THEME, themeChosen: false, aiConsent: false };
   try {
     const raw = store.getItem(SETTINGS_KEY);
     if (!raw) return defaults;
     const parsed: unknown = JSON.parse(raw);
     if (!isObject(parsed)) return defaults;
+    // Earlier versions saved the device's theme automatically, without the user
+    // choosing it. Only a theme the user picked themselves (themeChosen) is kept.
+    const chosen = parsed.themeChosen === true && (parsed.theme === 'dark' || parsed.theme === 'light');
     return {
-      theme: parsed.theme === 'dark' || parsed.theme === 'light' ? parsed.theme : fallbackTheme,
+      theme: chosen ? (parsed.theme as Theme) : DEFAULT_THEME,
+      themeChosen: chosen,
       aiConsent: parsed.aiConsent === true,
     };
   } catch {
