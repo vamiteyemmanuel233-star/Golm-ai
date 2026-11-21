@@ -22,6 +22,10 @@ describe('buildAiContext', () => {
     expect(serialised.includes('Emergency fund')).toBe(false);
     expect(context.savingsGoals).toHaveLength(2);
     expect(context.expensesByPaymentMethod.length).toBeGreaterThan(0);
+    // coaching facts are pre-calculated for the AI, without goal names
+    expect(context.coach.averageMonthly?.completeMonthsUsed).toBe(3);
+    expect(context.coach.suggestedReduction).not.toBeNull();
+    expect(context.coach.goalChecks.map((g) => g.goal)).toEqual(['Goal 1', 'Goal 2']);
   });
 });
 
@@ -36,6 +40,8 @@ describe('answerQuickQuestion', () => {
     expect(answerQuickQuestion('forecast', inputs)).toContain('statistical estimate');
     expect(answerQuickQuestion('goals', inputs)).toContain('School fees');
     expect(answerQuickQuestion('goals', { ...inputs, goals: [] })).toContain('no savings goals');
+    expect(answerQuickQuestion('reduce', inputs)).toContain('Cutting it by 10%');
+    expect(answerQuickQuestion('goal-check', inputs)).toContain('average surplus');
   });
 
   it('handles a month with no data', () => {

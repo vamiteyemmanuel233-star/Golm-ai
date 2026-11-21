@@ -20,6 +20,19 @@ All work below was done on **20 November 2026** (version 1.0 as *SwiftWise AI*, 
 | 13 | Planned-features list (clearly marked as not available) |
 | 14 | Backward compatibility: data saved by v1.0 loads unchanged (storage keys kept) |
 
+| 15 | **v1.2 — Hackathon upgrade** (21 Nov 2026, built on v1.1): AI financial coach engine and coach UI (formula answers + live Gemini prompts with pre-calculated facts) |
+| 16 | What-if simulator page (per-category cuts, extra income, horizon, calculation card, chart, goal impact) |
+| 17 | Smart goals: affordability vs average surplus, feasibility badges, "Can I reach it by…?" check |
+| 18 | Region & currency preference (GHS, NGN, KES, USD, GBP, EUR — display only, no conversion) |
+| 19 | Intro screen (#/about), README, ARCHITECTURE and HACKATHON-PITCH docs |
+
+## Verification performed while building (v1.2)
+
+- 110 unit tests passed (16 files) with a Vitest-compatible runner in the build environment; the real `vitest` package could not be installed there. **Run `npm test` yourself to confirm with real Vitest.**
+- Strict `tsc` passed for all library code. React code passed type-checking against simplified React type definitions (official ones could not be installed).
+- 76 automated browser checks passed in headless Chromium (desktop and phone size), using real React 19 with stand-in icon and chart components. They covered all v1.1 features, loading data saved by older versions, the What-if example (GH₵500 × 20% = GH₵100/month, GH₵1,200/12 months), smart goals, coach answers, the live-AI coach path against a **mock** Gemini server, currency switching and the intro screen.
+- **Not verified in the build environment:** `npm install`/`npm run build` with real packages, real Recharts and Lucide rendering, and a real Gemini call. Run `npm test` and `npm run build` on your machine.
+
 ## Verification performed while building (v1.1)
 
 - 89 unit tests passed (13 files), using a Vitest-compatible test runner. The build environment could not download packages, so the real `vitest` could not be used there.

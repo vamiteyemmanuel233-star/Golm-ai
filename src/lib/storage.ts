@@ -8,6 +8,7 @@ import { isValidCategory } from './categories';
 import { isValidISODate } from './dates';
 import { MAX_AMOUNT_PESEWAS } from './money';
 import { isPaymentMethod } from './paymentMethods';
+import { DEFAULT_COUNTRY, DEFAULT_CURRENCY, isCountryCode, isCurrencyCode } from './currency';
 
 // These keys come from the app's earlier name (SwiftWise AI). They are kept
 // unchanged on purpose: renaming them would make existing records disappear.
@@ -142,7 +143,7 @@ export function saveData(store: KeyValueStore, data: FinanceData): { ok: true } 
 export const DEFAULT_THEME: Theme = 'light';
 
 export function loadSettings(store: KeyValueStore): Settings {
-  const defaults: Settings = { theme: DEFAULT_THEME, themeChosen: false, aiConsent: false };
+  const defaults: Settings = { theme: DEFAULT_THEME, themeChosen: false, aiConsent: false, currency: DEFAULT_CURRENCY, country: DEFAULT_COUNTRY };
   try {
     const raw = store.getItem(SETTINGS_KEY);
     if (!raw) return defaults;
@@ -155,6 +156,9 @@ export function loadSettings(store: KeyValueStore): Settings {
       theme: chosen ? (parsed.theme as Theme) : DEFAULT_THEME,
       themeChosen: chosen,
       aiConsent: parsed.aiConsent === true,
+      // Settings saved before v1.2 have no currency/country: keep Ghana cedis.
+      currency: isCurrencyCode(parsed.currency) ? parsed.currency : DEFAULT_CURRENCY,
+      country: isCountryCode(parsed.country) ? parsed.country : DEFAULT_COUNTRY,
     };
   } catch {
     return defaults;

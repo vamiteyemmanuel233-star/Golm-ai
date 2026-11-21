@@ -1,4 +1,5 @@
 import { useId, useRef, useState, type FormEvent } from 'react';
+import { currencyLabel } from '../../lib/currency';
 import { ArrowDownLeft, ArrowUpRight, Banknote, CreditCard, Landmark, Smartphone, type LucideIcon } from 'lucide-react';
 import type { PaymentMethod, Transaction, TransactionType } from '../../types/finance';
 import { PAYMENT_METHODS } from '../../lib/paymentMethods';
@@ -76,9 +77,9 @@ export function TransactionForm({ initial, today, onSubmit, onCancel }: Transact
       </fieldset>
 
       <div className="form-grid">
-        <Field id={fid('amount')} label="Amount (GH₵)" error={errors.amount} hint="Up to 2 decimal places">
+        <Field id={fid('amount')} label={`Amount (${currencyLabel()})`} error={errors.amount} hint="Up to 2 decimal places">
           <div className="input-prefix">
-            <span aria-hidden="true">GH₵</span>
+            <span aria-hidden="true">{currencyLabel()}</span>
             <input
               id={fid('amount')}
               name="amount"

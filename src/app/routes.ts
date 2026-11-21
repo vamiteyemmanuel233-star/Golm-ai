@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
-import { ArrowLeftRight, Activity, Bot, LayoutDashboard, Lightbulb, PiggyBank, Settings, Target, type LucideIcon } from 'lucide-react';
+import { ArrowLeftRight, Activity, Bot, Info, LayoutDashboard, Lightbulb, PiggyBank, Settings, SlidersHorizontal, Target, type LucideIcon } from 'lucide-react';
 
-export type RouteId = 'dashboard' | 'transactions' | 'budgets' | 'goals' | 'analytics' | 'insights' | 'assistant' | 'settings';
+export type RouteId = 'about' | 'dashboard' | 'transactions' | 'budgets' | 'goals' | 'simulator' | 'analytics' | 'insights' | 'assistant' | 'settings';
 
 export interface RouteDef {
   id: RouteId;
@@ -10,17 +10,21 @@ export interface RouteDef {
   icon: LucideIcon;
   /** shown in the mobile bottom bar */
   primary: boolean;
+  /** shorter label for the mobile bottom bar */
+  short?: string;
 }
 
 export const ROUTES: RouteDef[] = [
-  { id: 'dashboard', label: 'Dashboard', href: '#/', icon: LayoutDashboard, primary: true },
-  { id: 'transactions', label: 'Transactions', href: '#/transactions', icon: ArrowLeftRight, primary: true },
+  { id: 'dashboard', label: 'Dashboard', href: '#/', icon: LayoutDashboard, primary: true, short: 'Home' },
+  { id: 'transactions', label: 'Transactions', href: '#/transactions', icon: ArrowLeftRight, primary: true, short: 'Records' },
   { id: 'budgets', label: 'Budgets', href: '#/budgets', icon: PiggyBank, primary: true },
   { id: 'goals', label: 'Goals', href: '#/goals', icon: Target, primary: true },
+  { id: 'simulator', label: 'What-if', href: '#/simulator', icon: SlidersHorizontal, primary: true },
   // Analytics stays in the desktop sidebar; on phones it is linked from the dashboard and insights pages.
   { id: 'analytics', label: 'Analytics', href: '#/analytics', icon: Activity, primary: false },
   { id: 'insights', label: 'Insights', href: '#/insights', icon: Lightbulb, primary: true },
-  { id: 'assistant', label: 'Assistant', href: '#/assistant', icon: Bot, primary: true },
+  { id: 'assistant', label: 'AI Coach', href: '#/assistant', icon: Bot, primary: true, short: 'Coach' },
+  { id: 'about', label: 'About GOLM AI', href: '#/about', icon: Info, primary: false },
   { id: 'settings', label: 'Settings', href: '#/settings', icon: Settings, primary: false },
 ];
 

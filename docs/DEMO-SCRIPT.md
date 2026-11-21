@@ -1,5 +1,7 @@
 # GOLM AI — Demo and presentation script (about 4½ minutes)
 
+> **For the v1.2 hackathon demo, use the 3-minute walkthrough in `HACKATHON-PITCH.md`.** It covers the AI Coach, What-if simulator and smart goals. This longer script remains for practice.
+
 **GOLM AI · Smart Finance. Smarter Future.** Powered by Vamit Golm Company Limited.
 
 > Practice project. If you present it, say clearly that it was built **before** the event as practice, unless the organisers have approved reusing it.
@@ -43,7 +45,7 @@
 - Click **Add** on the emergency fund to add GH₵300.
 - "With no goals yet, it suggests an emergency fund of about 3 months of your own spending."
 
-## 3:10 — GOLM Assistant (50 s)
+## 3:10 — GOLM AI Coach (50 s)
 
 - Click a quick question: "This answer is calculated locally and labelled *not AI*."
 - If live AI is on: ask "How can I reduce my transport costs?" Point to the **Live AI** label and model name.

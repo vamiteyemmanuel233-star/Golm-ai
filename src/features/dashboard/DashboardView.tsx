@@ -52,7 +52,7 @@ export function DashboardView() {
   if (transactions.length === 0) {
     return (
       <>
-        <PageHeader title="Welcome to GOLM AI" subtitle={`${BRAND.tagline} Track income and spending in Ghana cedis — cash, Mobile Money, bank or card — set budgets and savings goals, and get insights from your own data.`} />
+        <PageHeader title="Welcome to GOLM AI" subtitle={`${BRAND.tagline} Track income and spending — cash, Mobile Money, bank or card — set budgets and savings goals, test what-if plans and get coaching from your own data.`} />
         <Card>
           <EmptyState icon={Wallet} title="No transactions yet" message="Add your first income or expense to see your dashboard. You can also load clearly-labelled demonstration data to explore every feature.">
             <Button icon={Plus} onClick={openNewTransaction}>Add first transaction</Button>
@@ -66,6 +66,7 @@ export function DashboardView() {
             >
               Load demo data
             </Button>
+            <ButtonLink href={routeHref('about')} variant="ghost">How GOLM AI works</ButtonLink>
           </EmptyState>
         </Card>
         <div className="feature-grid">

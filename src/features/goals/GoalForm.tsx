@@ -1,4 +1,5 @@
 import { useId, useState, type FormEvent } from 'react';
+import { currencyLabel } from '../../lib/currency';
 import { Button } from '../../components/Button';
 import { describedBy, Field } from '../../components/Field';
 import { GOAL_NAME_MAX, validateGoal, type GoalErrors, type GoalInput } from '../../lib/goals';
@@ -58,15 +59,15 @@ export function GoalForm({ initial, preset, today, onSubmit, onCancel }: GoalFor
         />
       </Field>
       <div className="form-grid">
-        <Field id={f('target')} label="Target amount (GH₵)" error={errors.target}>
+        <Field id={f('target')} label={`Target amount (${currencyLabel()})`} error={errors.target}>
           <div className="input-prefix">
-            <span aria-hidden="true">GH₵</span>
+            <span aria-hidden="true">{currencyLabel()}</span>
             <input id={f('target')} className="input" inputMode="decimal" placeholder="0.00" value={values.target} onChange={(e) => set('target', e.target.value)} aria-invalid={errors.target ? true : undefined} aria-describedby={describedBy(f('target'), errors.target)} />
           </div>
         </Field>
-        <Field id={f('saved')} label="Already saved (GH₵)" optional error={errors.saved} hint={savedHint}>
+        <Field id={f('saved')} label={`Already saved (${currencyLabel()})`} optional error={errors.saved} hint={savedHint}>
           <div className="input-prefix">
-            <span aria-hidden="true">GH₵</span>
+            <span aria-hidden="true">{currencyLabel()}</span>
             <input id={f('saved')} className="input" inputMode="decimal" placeholder="0.00" value={values.saved} onChange={(e) => set('saved', e.target.value)} aria-invalid={errors.saved ? true : undefined} aria-describedby={describedBy(f('saved'), errors.saved, savedHint)} />
           </div>
         </Field>
@@ -104,9 +105,9 @@ export function GoalMoneyForm({ mode, max, onSubmit, onCancel }: { mode: 'add' |
 
   return (
     <form className="form" onSubmit={submit} noValidate>
-      <Field id={`${id}-amt`} label={mode === 'add' ? 'Amount to add (GH₵)' : 'Amount to withdraw (GH₵)'} error={error}>
+      <Field id={`${id}-amt`} label={mode === 'add' ? `Amount to add (${currencyLabel()})` : `Amount to withdraw (${currencyLabel()})`} error={error}>
         <div className="input-prefix">
-          <span aria-hidden="true">GH₵</span>
+          <span aria-hidden="true">{currencyLabel()}</span>
           <input id={`${id}-amt`} className="input" inputMode="decimal" placeholder="0.00" value={amount} onChange={(e) => { setAmount(e.target.value); setError(''); }} aria-invalid={error ? true : undefined} aria-describedby={describedBy(`${id}-amt`, error)} autoFocus />
         </div>
       </Field>

@@ -8,16 +8,20 @@
  *    These answers are always labelled in the UI as "calculated locally — not AI".
  */
 import type { Budget, MonthKey, SavingsGoal, Transaction } from '../types/finance';
+import { getDisplayCurrency, type CurrencyCode } from './currency';
 import { addMonths, lastNMonths, monthLabel } from './dates';
 import { budgetUtilization, categoryBreakdown, methodBreakdown, monthlyTotals, summarize } from './finance';
 import { planGoal } from './goals';
 import { paymentMethodLabel } from './paymentMethods';
+import { analyzeSpending, buildSavingsPlan, checkGoal, goalsAnswer, monthlyAverages, planAnswer, reduceAnswer, suggestReduction } from './coach';
 import { forecastHistoryEnd, forecastNextMonth } from './forecast';
 import { buildRecommendations, detectUnusualExpenses } from './insights';
 import { formatCedi, formatPercent, toCedis } from './money';
 
 export interface AiContext {
-  currency: 'GHS';
+  /** Display currency code; amounts are in its main unit (not converted). */
+  currency: CurrencyCode;
+  country: string;
   selectedMonth: string;
   monthSummary: { income: number; expenses: number; net: number; savingsRatePercent: number | null };
   lastSixMonths: { month: string; income: number; expenses: number }[];
@@ -29,6 +33,13 @@ export interface AiContext {
   forecastNextMonthExpenses: { amount: number; method: string } | null;
   unusualExpenseCount: number;
   ruleBasedFindings: string[];
+  /** Pre-calculated coaching facts (formulas from coach.ts) — the AI explains these, it does not recalculate them. */
+  coach: {
+    averageMonthly: { income: number; expenses: number; surplus: number; completeMonthsUsed: number } | null;
+    suggestedReduction: { category: string; averageMonthly: number; save10PercentMonthly: number; save20PercentMonthly: number; reason: string } | null;
+    savingsPlan: { guidelineTarget20PercentOfIncome: number; currentSurplus: number; gap: number; suggestedCuts: { category: string; cutPerMonth: number }[] } | null;
+    goalChecks: { goal: string; neededPerMonth: number | null; status: string; monthsAtFullSurplus: number | null }[];
+  };
 }
 
 export interface AssistantInputs {
@@ -37,9 +48,11 @@ export interface AssistantInputs {
   month: MonthKey;
   today: string;
   goals?: readonly SavingsGoal[];
+  /** Country name for context, e.g. "Ghana" */
+  country?: string;
 }
 
-export function buildAiContext({ transactions, budgets, month, today, goals = [] }: AssistantInputs): AiContext {
+export function buildAiContext({ transactions, budgets, month, today, goals = [], country = 'Ghana' }: AssistantInputs): AiContext {
   const summary = summarize(transactions, month);
   const sixMonths = monthlyTotals(transactions, lastNMonths(month, 6));
   const previous = monthlyTotals(transactions, lastNMonths(addMonths(month, -1), 6));
@@ -48,7 +61,8 @@ export function buildAiContext({ transactions, budgets, month, today, goals = []
   const recs = buildRecommendations({ transactions, budgets, month, today, previousMonths: previous, unusual });
 
   return {
-    currency: 'GHS',
+    currency: getDisplayCurrency(),
+    country,
     selectedMonth: monthLabel(month, 'long'),
     monthSummary: {
       income: toCedis(summary.income),
@@ -89,12 +103,83 @@ export function buildAiContext({ transactions, budgets, month, today, goals = []
       : null,
     unusualExpenseCount: unusual.length,
     ruleBasedFindings: recs.map((r) => r.title),
+    coach: buildCoachFacts(transactions, budgets, goals, today),
   };
 }
 
-export type QuickQuestionId = 'summary' | 'top-spending' | 'budgets' | 'forecast' | 'savings-tips' | 'goals';
+function buildCoachFacts(
+  transactions: readonly Transaction[],
+  budgets: readonly Budget[],
+  goals: readonly SavingsGoal[],
+  today: string,
+): AiContext['coach'] {
+  const avg = monthlyAverages(transactions, today);
+  const reduction = suggestReduction(transactions, budgets, today);
+  const plan = buildSavingsPlan(transactions, goals, today);
+  return {
+    averageMonthly: avg
+      ? { income: toCedis(avg.income), expenses: toCedis(avg.expenses), surplus: toCedis(avg.surplus), completeMonthsUsed: avg.months.length }
+      : null,
+    suggestedReduction: reduction
+      ? {
+          category: reduction.category,
+          averageMonthly: toCedis(reduction.monthly),
+          save10PercentMonthly: toCedis(reduction.save10),
+          save20PercentMonthly: toCedis(reduction.save20),
+          reason: reduction.reason,
+        }
+      : null,
+    savingsPlan: plan
+      ? {
+          guidelineTarget20PercentOfIncome: toCedis(plan.target),
+          currentSurplus: toCedis(plan.surplus),
+          gap: toCedis(plan.gap),
+          suggestedCuts: plan.cuts.map((c) => ({ category: c.category, cutPerMonth: toCedis(c.cut) })),
+        }
+      : null,
+    // Goal names are user-typed, so they are replaced with "Goal 1", "Goal 2"…
+    goalChecks: goals.map((g, i) => {
+      const check = checkGoal(g, avg ? avg.surplus : null, today);
+      return {
+        goal: `Goal ${i + 1}`,
+        neededPerMonth: check.needed === null ? null : toCedis(check.needed),
+        status: check.status,
+        monthsAtFullSurplus: check.monthsAtSurplus,
+      };
+    }),
+  };
+}
+
+export type QuickQuestionId =
+  | 'analyze'
+  | 'reduce'
+  | 'plan'
+  | 'goal-check'
+  | 'summary'
+  | 'top-spending'
+  | 'budgets'
+  | 'forecast'
+  | 'savings-tips'
+  | 'goals';
+
+/** Coach questions answered by formulas on this device (shown first). */
+export const COACH_QUESTIONS: { id: QuickQuestionId; label: string }[] = [
+  { id: 'analyze', label: 'Analyse my monthly spending' },
+  { id: 'reduce', label: 'Which expense should I reduce?' },
+  { id: 'plan', label: 'Create a realistic savings plan' },
+  { id: 'goal-check', label: 'Can I achieve my savings goals?' },
+];
+
+/** The same coaching questions, sent to live Gemini for a personalised explanation. */
+export const LIVE_COACH_PROMPTS: string[] = [
+  'Analyse my monthly spending and tell me the two most important things to change.',
+  'Which expense category should I reduce first, and how?',
+  'Create a realistic monthly savings plan for me using my numbers.',
+  'Can I achieve my savings goals on time? If not, what should I change?',
+];
 
 export const QUICK_QUESTIONS: { id: QuickQuestionId; label: string }[] = [
+  ...COACH_QUESTIONS,
   { id: 'summary', label: 'How am I doing this month?' },
   { id: 'top-spending', label: 'Where does most of my money go?' },
   { id: 'budgets', label: 'Am I over any budget?' },
@@ -108,6 +193,12 @@ export function answerQuickQuestion(id: QuickQuestionId, inputs: AssistantInputs
   const { transactions, budgets, month, today, goals = [] } = inputs;
   const label = monthLabel(month, 'long');
   const summary = summarize(transactions, month);
+
+  const coachInputs = { transactions, budgets, goals, month, today };
+  if (id === 'analyze') return analyzeSpending(coachInputs);
+  if (id === 'reduce') return reduceAnswer(coachInputs);
+  if (id === 'plan') return planAnswer(coachInputs);
+  if (id === 'goal-check') return goalsAnswer(coachInputs);
 
   if (id === 'goals') {
     if (goals.length === 0) return 'You have no savings goals yet. Create one on the Goals page — for example an emergency fund or school fees.';

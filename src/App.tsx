@@ -5,6 +5,7 @@ import { Button, ButtonLink } from './components/Button';
 import { Card } from './components/Card';
 import { EmptyState } from './components/EmptyState';
 import { ErrorBoundary } from './components/ErrorBoundary';
+import { AboutView } from './features/about/AboutView';
 import { AnalyticsView } from './features/analytics/AnalyticsView';
 import { AssistantView } from './features/assistant/AssistantView';
 import { BudgetsView } from './features/budgets/BudgetsView';
@@ -13,18 +14,21 @@ import { GoalsView } from './features/goals/GoalsView';
 import { InsightsView } from './features/insights/InsightsView';
 import { AppShell, Logo } from './features/layout/AppShell';
 import { SettingsView } from './features/settings/SettingsView';
+import { SimulatorView } from './features/simulator/SimulatorView';
 import { TransactionModal } from './features/transactions/TransactionModal';
 import { TransactionsView } from './features/transactions/TransactionsView';
 import { FinanceProvider, useFinance } from './state/FinanceContext';
-import { SettingsProvider } from './state/SettingsContext';
+import { SettingsProvider, useSettings } from './state/SettingsContext';
 import { ToastProvider } from './state/ToastContext';
 import { UiProvider } from './state/UiContext';
 
 const VIEWS: Record<RouteId, ComponentType> = {
+  about: AboutView,
   dashboard: DashboardView,
   transactions: TransactionsView,
   budgets: BudgetsView,
   goals: GoalsView,
+  simulator: SimulatorView,
   analytics: AnalyticsView,
   insights: InsightsView,
   assistant: AssistantView,
@@ -74,13 +78,15 @@ function RecoveryScreen() {
 function Routed() {
   const route = useHashRoute();
   const { corrupt } = useFinance();
+  const { currency } = useSettings();
   if (corrupt) return <RecoveryScreen />;
   const View = route === 'not-found' ? NotFound : VIEWS[route];
   return (
     <UiProvider>
       <AppShell route={route}>
         <ErrorBoundary resetKey={route}>
-          <View />
+          {/* key: changing the display currency redraws the page with the new symbol */}
+          <View key={currency} />
         </ErrorBoundary>
       </AppShell>
       <TransactionModal />

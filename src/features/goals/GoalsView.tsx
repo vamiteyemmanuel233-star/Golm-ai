@@ -15,6 +15,31 @@ import { formatCedi, formatPercent } from '../../lib/money';
 import { useFinance } from '../../state/FinanceContext';
 import { useToast } from '../../state/ToastContext';
 import { GoalForm, GoalMoneyForm } from './GoalForm';
+import { checkGoal, checkGoalByDate, endOfMonth, monthlyAverages, type Feasibility } from '../../lib/coach';
+
+const FEASIBILITY: Record<Feasibility, { label: string; tone: BadgeTone } | null> = {
+  reached: null,
+  'on-track': { label: 'Achievable', tone: 'green' },
+  stretch: { label: 'Tight', tone: 'amber' },
+  'not-feasible': { label: 'Needs more than your surplus', tone: 'red' },
+  'no-surplus': { label: 'No surplus yet', tone: 'red' },
+  'no-deadline': null,
+};
+
+/** "Can I reach it by …?" — checks any month the user picks. */
+function DateCheck({ goal, surplus, today }: { goal: SavingsGoal; surplus: number | null; today: string }) {
+  const [month, setMonth] = useState('');
+  const inputId = `check-${goal.id}`;
+  const result = month && /^\d{4}-\d{2}$/.test(month) ? checkGoalByDate(goal, endOfMonth(month), surplus, today) : null;
+  return (
+    <details className="date-check">
+      <summary>Can I reach it by a certain month?</summary>
+      <label className="field__label" htmlFor={inputId}>Target month</label>
+      <input id={inputId} className="input" type="month" min={today.slice(0, 7)} value={month} onChange={(e) => setMonth(e.target.value)} />
+      {result ? <p className={`date-check__result date-check__result--${result.status}`}>{result.summary}</p> : null}
+    </details>
+  );
+}
 
 type Dialog =
   | { kind: 'closed' }
@@ -35,6 +60,10 @@ export function GoalsView() {
   const [dialog, setDialog] = useState<Dialog>({ kind: 'closed' });
   const [pendingDelete, setPendingDelete] = useState<SavingsGoal | null>(null);
   const goals = data.goals;
+
+  // Average money left over each month (complete months only) — what goals can realistically draw on.
+  const averages = useMemo(() => monthlyAverages(data.transactions, today), [data.transactions, today]);
+  const surplus = averages ? averages.surplus : null;
 
   const totals = useMemo(() => {
     const target = goals.reduce((s, g) => s + g.target, 0);
@@ -59,6 +88,44 @@ export function GoalsView() {
         subtitle="Plan for school fees, rent advance, an emergency fund or a business — and see how much to put aside each month."
         actions={<Button icon={Plus} onClick={() => setDialog({ kind: 'new' })}>New goal</Button>}
       />
+
+      {goals.length > 0 ? (
+        <Card className="afford" title="Can you afford your goals?" subtitle="Compared with the money you usually have left over each month">
+          {surplus === null ? (
+            <p className="muted">Record at least one complete month of income and expenses so GOLM AI can compare your goals with what you can actually save.</p>
+          ) : (
+            <>
+              <div className="budget-summary__grid">
+                <div>
+                  <span className="eyebrow">Average monthly surplus</span>
+                  <p className={`big-number ${surplus < 0 ? 'text-danger' : ''}`}>{formatCedi(surplus)}</p>
+                  <p className="muted small-print-tight">Income {formatCedi(averages?.income ?? 0)} − spending {formatCedi(averages?.expenses ?? 0)}, average of {averages?.months.length} complete month(s)</p>
+                </div>
+                <div>
+                  <span className="eyebrow">Dated goals need</span>
+                  <p className="big-number">{formatCedi(totals.monthly)}<span className="per-month"> /month</span></p>
+                </div>
+              </div>
+              {surplus <= 0 ? (
+                <div className="notice notice--warning" role="alert">
+                  <ShieldCheck size={18} aria-hidden="true" />
+                  <p><strong>You are not saving anything at the moment.</strong> Your recent spending is equal to or more than your income. Use the What-if page to find cuts before committing to goals.</p>
+                </div>
+              ) : totals.monthly > surplus ? (
+                <div className="notice notice--warning" role="alert">
+                  <ShieldCheck size={18} aria-hidden="true" />
+                  <p><strong>Your goals need {formatCedi(totals.monthly - surplus)} more per month than you usually have left over.</strong> Extend a target date, lower a target, or cut spending (try the What-if page).</p>
+                </div>
+              ) : totals.monthly > 0 ? (
+                <div className="notice" role="note">
+                  <ShieldCheck size={18} aria-hidden="true" />
+                  <p>Your dated goals use {formatPercent(totals.monthly / surplus)} of your usual surplus — {formatCedi(surplus - totals.monthly)} a month remains for other savings.</p>
+                </div>
+              ) : null}
+            </>
+          )}
+        </Card>
+      ) : null}
 
       {suggestion && !hasEmergencyGoal ? (
         <Card className="suggest">
@@ -135,6 +202,26 @@ export function GoalsView() {
                       <>Goal reached — well done.</>
                     )}
                   </p>
+                  {(() => {
+                    const check = checkGoal(goal, surplus, today);
+                    const tag = FEASIBILITY[check.status];
+                    if (plan.status === 'complete') return null;
+                    return (
+                      <div className={`feasibility feasibility--${check.status}`}>
+                        {tag ? <Badge tone={tag.tone}>{tag.label}</Badge> : null}
+                        <p>
+                          {check.status === 'no-deadline' && check.monthsAtSurplus !== null
+                            ? `At your average surplus of ${formatCedi(surplus ?? 0)}, about ${check.monthsAtSurplus} month(s) if it all goes here.`
+                            : check.status === 'no-surplus'
+                              ? 'Your recent months show nothing left over after expenses.'
+                              : check.needed !== null && surplus !== null
+                                ? `Needs ${formatCedi(check.needed)}/month of your ${formatCedi(surplus)} average surplus.`
+                                : null}
+                        </p>
+                      </div>
+                    );
+                  })()}
+                  <DateCheck goal={goal} surplus={surplus} today={today} />
                   <div className="budget-card__actions goal-card__actions">
                     <Button size="sm" variant="secondary" icon={Plus} onClick={() => setDialog({ kind: 'money', goal, mode: 'add' })} aria-label={`Add money to ${goal.name}`}>Add</Button>
                     <Button size="sm" variant="ghost" icon={Minus} onClick={() => setDialog({ kind: 'money', goal, mode: 'withdraw' })} disabled={goal.saved === 0} aria-label={`Withdraw from ${goal.name}`}>Withdraw</Button>

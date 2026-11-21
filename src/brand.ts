@@ -7,7 +7,7 @@ export const BRAND = {
   name: 'GOLM AI',
   shortName: 'GOLM',
   tagline: 'Smart Finance. Smarter Future.',
-  assistantName: 'GOLM Assistant',
+  assistantName: 'GOLM AI Coach',
   company: 'Vamit Golm Company Limited',
   website: 'https://vamitgolm.com',
   websiteLabel: 'vamitgolm.com',

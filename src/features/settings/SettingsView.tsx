@@ -1,4 +1,5 @@
-import { useState } from 'react';
+import { useId, useState } from 'react';
+import { COUNTRIES, CURRENCIES, isCountryCode, isCurrencyCode } from '../../lib/currency';
 import { Database, Download, Moon, ShieldCheck, Sun, Trash2, X } from 'lucide-react';
 import { BRAND, ROADMAP } from '../../brand';
 import { Badge } from '../../components/Badge';
@@ -14,7 +15,8 @@ import { useToast } from '../../state/ToastContext';
 
 export function SettingsView() {
   const { data, hasDemo, loadDemo, clearDemo, clearAll, persistent, today } = useFinance();
-  const { theme, setTheme, aiConsent, setAiConsent } = useSettings();
+  const { theme, setTheme, aiConsent, setAiConsent, currency, country, setCurrency, setCountry } = useSettings();
+  const regionId = useId();
   const { notify } = useToast();
   const [confirm, setConfirm] = useState<'demo' | 'all' | null>(null);
   const userCount = data.transactions.filter((t) => !t.isDemo).length;
@@ -34,6 +36,45 @@ export function SettingsView() {
               <Moon size={16} aria-hidden="true" /> Dark
             </button>
           </div>
+        </Card>
+
+        <Card title="Region & currency" subtitle="How amounts are shown">
+          <div className="form-grid">
+            <div className="field">
+              <label className="field__label" htmlFor={`${regionId}-country`}>Country</label>
+              <select
+                id={`${regionId}-country`}
+                className="input"
+                value={country}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  if (!isCountryCode(value)) return;
+                  const match = COUNTRIES.find((c) => c.code === value);
+                  setCountry(value, match?.currency ?? currency);
+                  notify(`Region set to ${match?.name ?? value}.`, 'info');
+                }}
+              >
+                {COUNTRIES.map((c) => <option key={c.code} value={c.code}>{c.name}</option>)}
+              </select>
+            </div>
+            <div className="field">
+              <label className="field__label" htmlFor={`${regionId}-currency`}>Currency</label>
+              <select
+                id={`${regionId}-currency`}
+                className="input"
+                value={currency}
+                onChange={(e) => {
+                  const value = e.target.value;
+                  if (isCurrencyCode(value)) setCurrency(value);
+                }}
+              >
+                {CURRENCIES.map((c) => <option key={c.code} value={c.code}>{c.symbol.trim()} — {c.name} ({c.code})</option>)}
+              </select>
+            </div>
+          </div>
+          <p className="muted small-print">
+            This changes the currency <strong>symbol only</strong>. Amounts you have saved are not converted — GOLM AI does not use exchange rates. Choose the currency you actually record your money in.
+          </p>
         </Card>
 
         <Card title="Demonstration data" subtitle="Invented records for exploring and presenting the app">
@@ -106,7 +147,10 @@ export function SettingsView() {
             <p className="muted">
               {BRAND.name} is developed by {BRAND.company}. This is a practice build (version 1.1). It is not connected to, affiliated with or endorsed by any bank, Mobile Money provider, regulator or hackathon organiser. It gives educational information, not financial advice.
             </p>
-            <a href={BRAND.website} target="_blank" rel="noopener noreferrer" className="about__link">{BRAND.websiteLabel}</a>
+            <div className="button-row">
+              <a href="#/about" className="btn btn--secondary btn--sm">How GOLM AI works</a>
+              <a href={BRAND.website} target="_blank" rel="noopener noreferrer" className="btn btn--ghost btn--sm">{BRAND.websiteLabel}</a>
+            </div>
           </div>
         </Card>
 

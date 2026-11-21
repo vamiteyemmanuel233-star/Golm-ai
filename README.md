@@ -1,22 +1,22 @@
 # GOLM AI
 
 **Smart Finance. Smarter Future.**
-Powered by **Vamit Golm Company Limited** · https://vamitgolm.com
+By **Vamit Golm Company Limited** · https://vamitgolm.com
 
-GOLM AI is a personal-finance app for Ghana. It tracks income and spending in Ghana cedis (GH₵) by cash, Mobile Money, bank or card, sets monthly budgets and savings goals, and gives clear insights from your own data. An optional AI assistant runs on Google Gemini.
+GOLM AI is a personal finance coach for everyday earners. People record income and spending, including *how* they paid (Mobile Money, cash, bank or card). GOLM AI turns those records into budgets, savings goals, what-if scenarios and personal coaching. It runs in the browser, keeps data on the user's device and works offline. An optional live AI coach (Google Gemini) explains the user's numbers in plain language.
 
-> **Status:** practice build, version 1.1 (20 November 2026). It was rebranded from the earlier *SwiftWise AI* practice project.
-> GOLM AI is **not** connected to, affiliated with or endorsed by any bank, Mobile Money provider, regulator or hackathon organiser. It does not hold or move money, and it gives educational information, **not financial advice**.
-> Only submit it to a competition if the organisers explicitly allow pre-built code.
+> **Version 1.2 (hackathon upgrade).** Built on the existing GOLM AI v1.1 app; every v1.1 feature and existing user data are preserved.
+> Only enter it in a competition if the organisers allow pre-existing and AI-assisted code.
+> GOLM AI does not hold or move money and is not connected to any bank or Mobile Money provider. It gives educational information, **not financial advice**.
 
 ---
 
 ## 1. Run it (Windows PowerShell in VS Code)
 
-You need **Node.js 20.19 or newer** (22 LTS recommended). Check with `node -v`.
+You need **Node.js 20.19 or newer** (22 LTS recommended).
 
-1. Extract `golm-ai-practice.zip` into its own folder.
-2. In VS Code, use **File → Open Folder…** and choose the extracted **`golm-ai-practice`** folder.
+1. Extract `golm-ai-hackathon.zip`.
+2. In VS Code, use **File → Open Folder…** and choose the extracted **`golm-ai-hackathon`** folder (the one that contains `package.json`).
 3. Open the terminal (**Ctrl + `**) and run:
 
 ```powershell
@@ -24,116 +24,90 @@ npm install
 npm run dev
 ```
 
-4. Open **http://localhost:5173** (or the address Vite prints).
-5. Click **Load demo data** to explore, or **Add first transaction** to start with your own entries.
+Then open **http://localhost:5173**.
 
-Everything works offline, with **no API key**. Only the free-form AI chat needs the optional setup in section 3.
-
-**Check it builds and the tests pass:**
-
-```powershell
-npm test
-npm run build
-```
-
-## 2. What it does
-
-| Feature | What it solves |
+| Task | Command |
 |---|---|
-| **Dashboard** | See this month's income, spending, savings and savings rate at a glance, compared with last month |
-| **Transactions** | Record every cedi with its payment method (**Mobile Money, cash, bank, card**); search, filter and export to CSV for records or tax |
-| **Budgets** | Set monthly limits per category; get warned at 85% and alerted when over |
-| **Savings goals** *(new)* | Plan for school fees, a rent advance, an emergency fund or a business. GOLM AI shows progress and **how much to set aside each month** to hit your date |
-| **Emergency-fund suggestion** *(new)* | Suggests a fund of about 3 months of your own average spending |
-| **How you pay** *(new)* | Shows how much of your spending goes through Mobile Money vs cash vs bank vs card |
-| **Analytics** | 6 or 12-month cash flow, category breakdown, spending trend with forecast, budget use, monthly table |
-| **Insights** | Unusual expenses, overspending, low savings, rising spending — each with the rule behind it |
-| **GOLM Assistant** | Instant quick answers calculated on your device, plus optional live AI chat (Google Gemini) behind explicit consent |
-| **Settings** | Light/dark theme, demo data, export, delete all data, AI consent, roadmap |
+| Install dependencies | `npm install` |
+| Start the app (development) | `npm run dev` |
+| Run all unit tests | `npm test` |
+| Strict TypeScript check | `npm run typecheck` |
+| Production build (into `dist/`) | `npm run build` |
+| Preview the production build | `npm run preview` |
+| Optional live AI server | `npm run server` |
 
-### Planned (not built)
-
-Mobile Money import, bank connections, money transfers and payments, business finance, and advanced AI planning are listed in the app as **"Planned — not available yet"**. No integration with any provider exists, and payment features would need the proper licences and partners first.
-
-## 3. Optional: live AI with Google Gemini (free tier)
-
-1. Get a free API key at https://aistudio.google.com/apikey. Free-tier limits and terms change, so check https://ai.google.dev/pricing.
-2. Create your settings file and paste the key into it:
+### Optional: live AI coach (Gemini)
 
 ```powershell
 Copy-Item server\.env.example server\.env
 notepad server\.env
 ```
 
-3. In a **second** terminal, run:
+Add your free key from https://aistudio.google.com/apikey to `GEMINI_API_KEY=`, save, then in a **second** terminal run `npm run server`. In the app, open **AI Coach**, click **Re-check** and give consent.
+
+`server/.env` is git-ignored and is **not** included in the ZIP.
+
+## 2. Features
+
+| | Feature | Works offline |
+|---|---|---|
+| **New** | **AI financial coach.** Spending analysis, which category to reduce, a realistic savings plan and goal feasibility, calculated by GOLM's formulas. Optional live Gemini coaching explains the same pre-calculated facts. | Formulas: ✅ · Gemini: needs internet + server |
+| **New** | **What-if simulator.** Sliders per category, extra income, 3–36 month horizon, the calculation shown line by line, a cumulative chart, and how much sooner a goal is reached. | ✅ |
+| **New** | **Smart goals.** Compares goals with the user's average monthly surplus, shows an Achievable / Tight / Not feasible badge, warns when goals need more than the surplus, and answers "Can I reach it by …?" for any month. | ✅ |
+| **New** | **Region and currency.** Display in GHS, NGN, KES, USD, GBP or EUR. Symbol only: amounts are **never converted**, because no exchange-rate data is used. | ✅ |
+| **New** | **Intro screen** (`#/about`) explaining the problem, how it works and the trust model. | ✅ |
+| v1.1 | Dashboard, transactions (with payment method, search, filters, CSV export), budgets, savings goals, analytics, insights, forecast, demo data, light/dark mode, data recovery | ✅ |
+
+## 3. How AI is used (and where it isn't)
+
+| Layer | What it does | Labelled in the app as |
+|---|---|---|
+| **Financial engine** (`src/lib/`) | All arithmetic: totals, averages, budgets, forecasts, outliers, goal plans, simulator, coach facts. Pure TypeScript, unit-tested. | "Coach formula · calculated on this device — not AI" |
+| **Live AI coach** (Gemini via `server/`) | Receives the engine's **pre-calculated** coaching facts and explains them conversationally. It is instructed not to recalculate or invent numbers. | "GOLM AI Coach · live AI (model) · may contain mistakes" |
+
+The AI is used where it adds real value: personalised explanation and prioritisation. The numbers stay deterministic and checkable.
+
+## 4. Privacy and security
+
+- Records are stored only in the browser (localStorage) on the user's device. There is no account system and nothing is uploaded.
+- Live AI is **opt-in**: nothing is sent until the user ticks consent. They can preview the exact payload and withdraw consent at any time.
+- Only **aggregates** are sent: monthly totals, category and payment-method totals, budgets and goal amounts. Transaction descriptions, goal names, exact dates and IDs are never sent.
+- The API key lives only in `server/.env` on the local server and never reaches the browser. The server listens on `127.0.0.1`, validates input, limits request size and rate-limits to 15 requests a minute.
+
+## 5. Data compatibility
+
+Data saved by earlier versions (SwiftWise AI, GOLM AI v1.1) loads unchanged:
+- **Storage keys are unchanged.**
+- New settings (currency, country) default to Ghana / GHS.
+- Older transactions without a payment method show "Not recorded".
+- A previously auto-saved dark theme is replaced by the new white default, but a theme the user chose themselves is kept.
+
+## 6. Testing
 
 ```powershell
-npm run server
+npm test
+npm run build
 ```
 
-4. In the app, open **Assistant**, click **Re-check**, read the privacy notice, tick the box and click **Enable live AI**.
+Unit tests cover the whole financial engine, including money, dates, budgets, filters, forecast, outliers, recommendations, goals, coach and simulator. They also cover CSV, storage and validation, compatibility with old data, the reducer, the AI summary (privacy checks), currency handling and server input validation. See `docs/DEVLOG.md` for what was verified while building.
 
-**Privacy and security**
-- The key stays in `server/.env`, which is excluded by `.gitignore` and not included in the ZIP.
-- The server only listens on your own computer, validates requests and limits them to 15 per minute.
-- Only totals are sent to Google, never descriptions, goal names, dates or IDs. You can preview the exact data on the Assistant page.
-- If the server isn't running, the app clearly says live AI is unavailable. It never fakes AI answers.
+## 7. Documentation
 
-If the model name stops working, set `GEMINI_MODEL` in `server/.env` to a model listed in Google AI Studio.
-
-## 4. Your existing data is safe
-
-GOLM AI reads data from the same browser storage the SwiftWise AI version used, so records you entered before the rebrand are still there.
-
-Older records simply show **"Not recorded"** as their payment method until you edit them. The storage keys keep their original names on purpose: renaming them would hide existing records.
-
-## 5. Scripts
-
-| Command | Purpose |
+| File | Contents |
 |---|---|
-| `npm run dev` | Start the app with hot reload |
-| `npm test` | Run all unit tests |
-| `npm run typecheck` | Strict TypeScript check |
-| `npm run build` | Type-check and build for production into `dist/` |
-| `npm run preview` | Serve the production build |
-| `npm run server` | Start the optional AI server |
+| `docs/HACKATHON-PITCH.md` | Problem, solution, innovation, 3-minute demo walkthrough, likely judges' questions |
+| `docs/ARCHITECTURE.md` | Architecture, data flow, AI design, calculation formulas |
+| `docs/DEMO-SCRIPT.md` | Step-by-step live demo checklist |
+| `docs/DEVLOG.md` | Development record and verification log |
+| `docs/REBUILD-DRILL.md` | Practice drills |
 
-## 6. How the numbers are calculated (no hidden AI)
+## 8. Updating your existing project and live site
 
-| Item | Formula |
-|---|---|
-| Savings rate | (income − expenses) ÷ income |
-| Budget alert | spent ÷ limit: warning ≥ 85%, over budget > 100% |
-| Goal plan | monthly amount = ⌈(target − saved) ÷ months left⌉ (at least 1 month) |
-| Emergency fund | 3 × average monthly spending of up to 3 recent complete months, rounded up to GH₵10 |
-| Unusual expense | modified z-score 0.6745 × (amount − median) ÷ MAD above 3.5 within a category (needs 5+ expenses) |
-| Forecast | weighted moving average of up to 3 complete months (weights 1, 2, 3) + linear trend for comparison |
+This folder is a complete, separate copy. To update your existing repository:
+1. Copy everything from this folder **except** `node_modules` into your existing `golm-ai-practice` folder, replacing files. Keep your own `server/.env`.
+2. Run `npm install`, `npm test`, `npm run build`.
+3. Then `git add .`, `git commit -m "GOLM AI v1.2"`, `git push`. Vercel redeploys automatically.
 
-All money is stored as whole **pesewas** (GH₵1 = 100), so totals are exact.
+No Vercel settings need to change (still Vite / `npm run build` / `dist`).
 
-## 7. Project structure
-
-```
-src/brand.ts              Name, tagline, company, links and roadmap: one place to rebrand or extend
-src/lib/                  Pure, unit-tested logic: money, dates, finance, goals, payment methods,
-                          insights, forecast, CSV, storage, validation, demo data, assistant
-src/state/                Data store (reducer + React context)
-src/components/           Reusable UI pieces
-src/features/             One folder per page: dashboard, transactions, budgets, goals,
-                          analytics, insights, assistant, settings
-src/styles/               Design tokens (colours, spacing) and app styles
-server/                   Optional Gemini AI server (Node built-ins only, no extra packages)
-docs/                     Demo script, development log, rebuild drill
-```
-
-## 8. Troubleshooting
-
-| Problem | Fix |
-|---|---|
-| `npm` is not recognised | Install Node.js LTS from nodejs.org and reopen VS Code |
-| "running scripts is disabled" | Run `Set-ExecutionPolicy -Scope CurrentUser RemoteSigned` once |
-| Node version too old | Install Node 22 LTS |
-| Assistant says the AI server is not running | Run `npm run server` in a second terminal, then click **Re-check** |
-| "API key was rejected" / "model not found" | Check `GEMINI_API_KEY` / `GEMINI_MODEL` in `server/.env` and restart the server |
-
-© 2026 Vamit Golm Company Limited. Practice build — do not present it as work done during an official competition.
+© 2026 Vamit Golm Company Limited.

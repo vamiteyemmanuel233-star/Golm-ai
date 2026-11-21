@@ -8,6 +8,7 @@ import { ChartSkeleton } from '../../components/Skeleton';
 const Cashflow = lazy(() => import('./CashflowChart'));
 const Donut = lazy(() => import('./CategoryDonut'));
 const Trend = lazy(() => import('./TrendChart'));
+const Savings = lazy(() => import('./SavingsChart'));
 
 export function LazyCashflowChart(props: ComponentProps<typeof Cashflow>) {
   return (
@@ -29,6 +30,14 @@ export function LazyTrendChart(props: ComponentProps<typeof Trend>) {
   return (
     <Suspense fallback={<ChartSkeleton height={props.height ?? 280} />}>
       <Trend {...props} />
+    </Suspense>
+  );
+}
+
+export function LazySavingsChart(props: ComponentProps<typeof Savings>) {
+  return (
+    <Suspense fallback={<ChartSkeleton height={props.height ?? 260} />}>
+      <Savings {...props} />
     </Suspense>
   );
 }

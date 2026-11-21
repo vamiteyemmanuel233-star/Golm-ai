@@ -5,7 +5,8 @@ import { Button } from '../../components/Button';
 import { Card } from '../../components/Card';
 import { PageHeader } from '../../components/PageHeader';
 import { BRAND } from '../../brand';
-import { answerQuickQuestion, buildAiContext, QUICK_QUESTIONS, type QuickQuestionId } from '../../lib/assistant';
+import { answerQuickQuestion, buildAiContext, COACH_QUESTIONS, LIVE_COACH_PROMPTS, QUICK_QUESTIONS, type QuickQuestionId } from '../../lib/assistant';
+import { countryName } from '../../lib/currency';
 import { askAi, checkAiStatus, type AiStatus, type ChatTurn } from '../../lib/aiClient';
 import { useFinance } from '../../state/FinanceContext';
 import { useSettings } from '../../state/SettingsContext';
@@ -25,7 +26,7 @@ const QUESTION_MAX = 500;
 
 export function AssistantView() {
   const { data, today } = useFinance();
-  const { aiConsent, setAiConsent } = useSettings();
+  const { aiConsent, setAiConsent, country } = useSettings();
   const { month, label } = useMonthMeta();
   const [status, setStatus] = useState<AiStatus>({ state: 'checking' });
   const [messages, setMessages] = useState<Message[]>([]);
@@ -38,7 +39,10 @@ export function AssistantView() {
   const nextId = useRef(1);
   const logRef = useRef<HTMLDivElement>(null);
 
-  const inputs = useMemo(() => ({ transactions: data.transactions, budgets: data.budgets, goals: data.goals, month, today }), [data, month, today]);
+  const inputs = useMemo(
+    () => ({ transactions: data.transactions, budgets: data.budgets, goals: data.goals, month, today, country: countryName(country) }),
+    [data, month, today, country],
+  );
   const context = useMemo(() => buildAiContext(inputs), [inputs]);
 
   const refreshStatus = useCallback(async () => {
@@ -65,10 +69,10 @@ export function AssistantView() {
     push('local', answerQuickQuestion(id, inputs));
   };
 
-  const submit = async (event: FormEvent) => {
-    event.preventDefault();
-    const text = question.trim();
+  const sendToAi = async (raw: string) => {
+    const text = raw.trim();
     if (!text || !liveReady || sending) return;
+    setQuickOpen(false);
     // Only real AI exchanges go into the history: a user message immediately
     // followed by a live AI reply. Locally calculated answers are not sent.
     const history: ChatTurn[] = [];
@@ -91,11 +95,16 @@ export function AssistantView() {
     }
   };
 
+  const submit = (event: FormEvent) => {
+    event.preventDefault();
+    void sendToAi(question);
+  };
+
   return (
     <>
       <PageHeader
         title={BRAND.assistantName}
-        subtitle={`Ask about your budget, spending and savings goals for ${label}.`}
+        subtitle={`Personal coaching from your own records for ${label}: spending, savings plans and goals.`}
         actions={
           messages.length > 0 ? (
             <Button variant="ghost" icon={Trash2} onClick={() => setMessages([])}>Clear chat</Button>
@@ -145,12 +154,39 @@ export function AssistantView() {
             ) : null}
 
             {showQuick ? (
-              <div id="quick-questions" className="quick-questions" role="group" aria-label="Quick questions (calculated locally)">
-                {QUICK_QUESTIONS.map((q) => (
-                  <button key={q.id} type="button" className="chip" onClick={() => askQuick(q.id, q.label)}>
-                    <Calculator size={14} aria-hidden="true" /> {q.label}
-                  </button>
-                ))}
+              <div id="quick-questions" className="quick-panel">
+                {liveReady ? (
+                  <div className="quick-group">
+                    <p className="quick-group__title"><Sparkles size={14} aria-hidden="true" /> Ask the live AI coach (Gemini)</p>
+                    <div className="quick-questions" role="group" aria-label="Coach prompts sent to live AI">
+                      {LIVE_COACH_PROMPTS.map((prompt) => (
+                        <button key={prompt} type="button" className="chip chip--ai" onClick={() => void sendToAi(prompt)} disabled={sending}>
+                          <Bot size={14} aria-hidden="true" /> {prompt}
+                        </button>
+                      ))}
+                    </div>
+                  </div>
+                ) : null}
+                <div className="quick-group">
+                  <p className="quick-group__title"><Calculator size={14} aria-hidden="true" /> Coach answers — calculated on this device, not AI</p>
+                  <div className="quick-questions" role="group" aria-label="Coach questions (calculated locally)">
+                    {COACH_QUESTIONS.map((q) => (
+                      <button key={q.id} type="button" className="chip" onClick={() => askQuick(q.id, q.label)}>
+                        <Calculator size={14} aria-hidden="true" /> {q.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
+                <div className="quick-group">
+                  <p className="quick-group__title">More quick answers</p>
+                  <div className="quick-questions" role="group" aria-label="Quick questions (calculated locally)">
+                    {QUICK_QUESTIONS.filter((q) => !COACH_QUESTIONS.some((c) => c.id === q.id)).map((q) => (
+                      <button key={q.id} type="button" className="chip" onClick={() => askQuick(q.id, q.label)}>
+                        <Calculator size={14} aria-hidden="true" /> {q.label}
+                      </button>
+                    ))}
+                  </div>
+                </div>
               </div>
             ) : null}
 
@@ -234,7 +270,7 @@ function ChatMessage({ message }: { message: Message }) {
     message.source === 'ai'
       ? { icon: Bot, label: `${BRAND.assistantName} · live AI (${message.model ?? 'model'}) · may contain mistakes` }
       : message.source === 'local'
-        ? { icon: Calculator, label: 'Calculated locally from your data — not AI' }
+        ? { icon: Calculator, label: 'Coach formula · calculated on this device from your data — not AI' }
         : { icon: WifiOff, label: 'Error' };
   const Icon = meta.icon;
   return (
@@ -242,7 +278,7 @@ function ChatMessage({ message }: { message: Message }) {
       <span className="msg__avatar" aria-hidden="true"><Icon size={16} /></span>
       <div className="msg__bubble">
         <span className="msg__source">{meta.label}</span>
-        {message.source === 'ai' ? <FormattedText text={message.text} /> : <p className="msg__text">{message.text}</p>}
+        {message.source === 'ai' || message.source === 'local' ? <FormattedText text={message.text} /> : <p className="msg__text">{message.text}</p>}
       </div>
     </div>
   );

@@ -6,6 +6,8 @@
  * 0.1 + 0.2 = 0.30000000000000004, which would make totals look wrong.
  */
 
+import type { CountryCode, CurrencyCode } from '../lib/currency';
+
 export type TransactionType = 'income' | 'expense';
 
 /** How the money moved. Optional so records saved before this field existed still load. */
@@ -67,6 +69,9 @@ export interface Settings {
   themeChosen: boolean;
   /** The user explicitly agreed to send a summary of their data to the AI provider. */
   aiConsent: boolean;
+  /** Display currency (symbol only — amounts are never converted). Defaults to GHS. */
+  currency: CurrencyCode;
+  country: CountryCode;
 }
 
 /** Month key in the form YYYY-MM */

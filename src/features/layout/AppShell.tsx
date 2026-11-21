@@ -156,10 +156,10 @@ export function AppShell({ route, children }: { route: RouteId | 'not-found'; ch
       </div>
 
       <nav className="bottom-nav" aria-label="Main navigation (mobile)">
-        {ROUTES.filter((r) => r.primary).map(({ id, label, href, icon: Icon }) => (
-          <a key={id} href={href} className={`bottom-nav__link ${route === id ? 'is-active' : ''}`} aria-current={route === id ? 'page' : undefined}>
+        {ROUTES.filter((r) => r.primary).map(({ id, label, short, href, icon: Icon }) => (
+          <a key={id} href={href} className={`bottom-nav__link ${route === id ? 'is-active' : ''}`} aria-current={route === id ? 'page' : undefined} aria-label={label}>
             <Icon size={20} aria-hidden="true" />
-            <span>{label}</span>
+            <span aria-hidden="true">{short ?? label}</span>
           </a>
         ))}
       </nav>

@@ -65,15 +65,17 @@ describe('storage', () => {
 
   it('loads settings with safe defaults', () => {
     const store = createMemoryStore({ [SETTINGS_KEY]: '{"theme":"neon","aiConsent":"yes"}' });
-    expect(loadSettings(store)).toEqual({ theme: 'light', themeChosen: false, aiConsent: false });
-    saveSettings(store, { theme: 'dark', themeChosen: true, aiConsent: true });
-    expect(loadSettings(store)).toEqual({ theme: 'dark', themeChosen: true, aiConsent: true });
+    expect(loadSettings(store)).toEqual({ theme: 'light', themeChosen: false, aiConsent: false, currency: 'GHS', country: 'GH' });
+    saveSettings(store, { theme: 'dark', themeChosen: true, aiConsent: true, currency: 'KES', country: 'KE' });
+    expect(loadSettings(store)).toEqual({ theme: 'dark', themeChosen: true, aiConsent: true, currency: 'KES', country: 'KE' });
   });
 
   it('opens in light mode unless the user chose a theme', () => {
     expect(loadSettings(createMemoryStore()).theme).toBe('light');
     // Older versions auto-saved the device's dark theme without the user choosing it
     const autoSaved = createMemoryStore({ [SETTINGS_KEY]: '{"theme":"dark","aiConsent":true}' });
-    expect(loadSettings(autoSaved)).toEqual({ theme: 'light', themeChosen: false, aiConsent: true });
+    expect(loadSettings(autoSaved)).toEqual({ theme: 'light', themeChosen: false, aiConsent: true, currency: 'GHS', country: 'GH' });
+    // invalid currency falls back to GHS
+    expect(loadSettings(createMemoryStore({ [SETTINGS_KEY]: '{"currency":"BTC","country":"XX"}' })).currency).toBe('GHS');
   });
 });

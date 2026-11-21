@@ -1,6 +1,10 @@
 /**
- * Money helpers. All amounts are integers in pesewas (GH₵1 = 100 pesewas).
+ * Money helpers. All amounts are integers in the currency's minor unit
+ * (pesewas for GH₵, kobo for ₦, cents for $ …): 1 main unit = 100 minor units.
+ * Function names say "Cedi" for historical reasons; they format whichever
+ * display currency the user selected (see currency.ts).
  */
+import { CURRENCIES, currencyLabel, currencySymbol } from './currency';
 
 export const PESEWAS_PER_CEDI = 100;
 /** GH₵10,000,000 — a sanity limit that catches typing mistakes like extra zeros. */
@@ -13,11 +17,14 @@ export type ParseResult = { ok: true; value: number } | { ok: false; error: stri
  * Uses string maths instead of parseFloat so "0.29" becomes exactly 29.
  */
 export function parseCediInput(raw: string): ParseResult {
-  const cleaned = raw
-    .trim()
-    .replace(/^GH(₵|S|C)\s*/i, '')
-    .replace(/,/g, '')
-    .trim();
+  let cleaned = raw.trim().replace(/^GH(₵|S|C)\s*/i, '');
+  // Also accept any supported currency symbol or code typed in front.
+  for (const c of CURRENCIES) {
+    const symbol = c.symbol.trim();
+    if (cleaned.toUpperCase().startsWith(c.code)) cleaned = cleaned.slice(c.code.length);
+    else if (cleaned.startsWith(symbol)) cleaned = cleaned.slice(symbol.length);
+  }
+  cleaned = cleaned.replace(/,/g, '').trim();
 
   if (cleaned === '') return { ok: false, error: 'Enter an amount.' };
   if (!/^\d{1,9}(\.\d{1,2})?$/.test(cleaned)) {
@@ -32,7 +39,7 @@ export function parseCediInput(raw: string): ParseResult {
 
   if (value <= 0) return { ok: false, error: 'Amount must be greater than zero.' };
   if (value > MAX_AMOUNT_PESEWAS) {
-    return { ok: false, error: 'Amount is too large. The maximum is GH₵10,000,000.' };
+    return { ok: false, error: `Amount is too large. The maximum is ${currencyLabel()}10,000,000.` };
   }
   return { ok: true, value };
 }
@@ -42,9 +49,9 @@ const groupedFormatter = new Intl.NumberFormat('en-GH', {
   maximumFractionDigits: 2,
 });
 
-/** 125050 → "GH₵1,250.50"; -500 → "-GH₵5.00" */
+/** 125050 → "GH₵1,250.50"; -500 → "-GH₵5.00" (symbol follows the display currency) */
 export function formatCedi(pesewas: number, options: { showPlus?: boolean } = {}): string {
-  const body = `GH₵${groupedFormatter.format(Math.abs(pesewas) / PESEWAS_PER_CEDI)}`;
+  const body = `${currencySymbol()}${groupedFormatter.format(Math.abs(pesewas) / PESEWAS_PER_CEDI)}`;
   if (pesewas < 0) return `-${body}`;
   if (pesewas > 0 && options.showPlus) return `+${body}`;
   return body;
@@ -55,9 +62,10 @@ export function formatCediCompact(pesewas: number): string {
   const cedis = pesewas / PESEWAS_PER_CEDI;
   const abs = Math.abs(cedis);
   const sign = cedis < 0 ? '-' : '';
-  if (abs >= 1_000_000) return `${sign}GH₵${trim(abs / 1_000_000)}m`;
-  if (abs >= 1_000) return `${sign}GH₵${trim(abs / 1_000)}k`;
-  return `${sign}GH₵${Math.round(abs)}`;
+  const sym = currencySymbol();
+  if (abs >= 1_000_000) return `${sign}${sym}${trim(abs / 1_000_000)}m`;
+  if (abs >= 1_000) return `${sign}${sym}${trim(abs / 1_000)}k`;
+  return `${sign}${sym}${Math.round(abs)}`;
 }
 
 function trim(n: number): string {
@@ -82,3 +90,6 @@ export function toCedis(pesewas: number): number {
 export function formatPercent(ratio: number, digits = 0): string {
   return `${(ratio * 100).toFixed(digits)}%`;
 }
+
+/** Generic alias used by newer code. */
+export const formatMoney = formatCedi;

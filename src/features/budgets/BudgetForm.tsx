@@ -1,4 +1,5 @@
 import { useId, useState, type FormEvent } from 'react';
+import { currencyLabel } from '../../lib/currency';
 import { Button } from '../../components/Button';
 import { describedBy, Field } from '../../components/Field';
 import { pesewasToDecimalString } from '../../lib/money';
@@ -50,9 +51,9 @@ export function BudgetForm({ categories, editing, presetCategory, onSubmit, onCa
           {!editing && categories.map((c) => <option key={c} value={c}>{c}</option>)}
         </select>
       </Field>
-      <Field id={`${id}-amt`} label="Monthly limit (GH₵)" error={errors.amount} hint={hint}>
+      <Field id={`${id}-amt`} label={`Monthly limit (${currencyLabel()})`} error={errors.amount} hint={hint}>
         <div className="input-prefix">
-          <span aria-hidden="true">GH₵</span>
+          <span aria-hidden="true">{currencyLabel()}</span>
           <input
             id={`${id}-amt`}
             className="input"
