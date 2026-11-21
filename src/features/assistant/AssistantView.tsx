@@ -225,7 +225,7 @@ export function AssistantView() {
               </div>
             ) : (
               <div className="consent">
-                <p>When you ask the live AI a question, GOLM AI sends it — with a summary of your figures — through the local GOLM AI server to <strong>Google’s Gemini API</strong>.</p>
+                <p>When you ask the live AI a question, GOLM AI sends it — with a summary of your figures — through GOLM AI’s secure server (your computer, or the GOLM AI website’s server) to <strong>Google’s Gemini API</strong>. Your API key is never in the browser.</p>
                 <ul className="check-list">
                   <li>Shared: monthly totals, category and payment-method totals, budgets, savings-goal amounts, the forecast and rule-based findings.</li>
                   <li>Never shared: transaction descriptions, goal names, exact dates, IDs or your name.</li>

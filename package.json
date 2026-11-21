@@ -1,7 +1,7 @@
 {
   "name": "golm-ai",
   "private": true,
-  "version": "1.2.0",
+  "version": "1.2.1",
   "description": "GOLM AI — Smart Finance. Smarter Future. A Ghana-focused personal finance app by Vamit Golm Company Limited.",
   "type": "module",
   "engines": {

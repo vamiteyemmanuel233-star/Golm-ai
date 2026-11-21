@@ -26,6 +26,14 @@ All work below was done on **20 November 2026** (version 1.0 as *SwiftWise AI*, 
 | 18 | Region & currency preference (GHS, NGN, KES, USD, GBP, EUR — display only, no conversion) |
 | 19 | Intro screen (#/about), README, ARCHITECTURE and HACKATHON-PITCH docs |
 
+| 20 | **v1.2.1 — Live AI on Vercel** (21 Nov 2026): serverless functions `api/health.js` and `api/chat.js`; shared `server/gemini.mjs` and `server/handlers.mjs`; friendlier error messages; `.env.example`; `docs/DEPLOY-VERCEL.md` |
+
+## Verification performed while building (v1.2.1)
+
+- 116 unit tests, including the new hosted-AI handler tests, passed with a Vitest-compatible runner.
+- The real `api/health.js` and `api/chat.js` files were run behind a Vercel-style Node server against a **mock** Gemini API, as was the refactored local server.
+- **Not verified here:** an actual Vercel deployment and a real Gemini call from Vercel. Follow `docs/DEPLOY-VERCEL.md` → "Check it works".
+
 ## Verification performed while building (v1.2)
 
 - 110 unit tests passed (16 files) with a Vitest-compatible runner in the build environment; the real `vitest` package could not be installed there. **Run `npm test` yourself to confirm with real Vitest.**

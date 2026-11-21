@@ -28,7 +28,7 @@ export async function checkAiStatus(): Promise<AiStatus> {
   try {
     const response = await withTimeout(5000, (signal) => fetch('/api/health', { signal }));
     if (!response.ok) {
-      return { state: 'unavailable', reason: 'The AI server is not running. Start it with “npm run server” (see README).' };
+      return { state: 'unavailable', reason: 'The AI service is not reachable. On your own computer, start it with “npm run server” (see README).' };
     }
     const body: unknown = await response.json();
     if (typeof body !== 'object' || body === null) {
@@ -36,11 +36,11 @@ export async function checkAiStatus(): Promise<AiStatus> {
     }
     const { configured, provider, model } = body as Record<string, unknown>;
     if (configured !== true) {
-      return { state: 'unavailable', reason: 'The AI server is running but no API key is configured in server/.env.' };
+      return { state: 'unavailable', reason: 'The AI service is running but no API key is configured (server/.env locally, or GEMINI_API_KEY in Vercel settings).' };
     }
     return { state: 'available', provider: String(provider ?? 'AI provider'), model: String(model ?? 'unknown model') };
   } catch {
-    return { state: 'unavailable', reason: 'Could not reach the AI server. Start it with “npm run server” (see README).' };
+    return { state: 'unavailable', reason: 'Could not reach the AI service. On your own computer, start it with “npm run server” (see README).' };
   }
 }
 

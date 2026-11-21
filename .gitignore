@@ -11,3 +11,6 @@ server/.env
 !server/.env.example
 .DS_Store
 Thumbs.db
+
+# Vercel CLI local settings
+.vercel

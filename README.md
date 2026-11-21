@@ -5,7 +5,7 @@ By **Vamit Golm Company Limited** · https://vamitgolm.com
 
 GOLM AI is a personal finance coach for everyday earners. People record income and spending, including *how* they paid (Mobile Money, cash, bank or card). GOLM AI turns those records into budgets, savings goals, what-if scenarios and personal coaching. It runs in the browser, keeps data on the user's device and works offline. An optional live AI coach (Google Gemini) explains the user's numbers in plain language.
 
-> **Version 1.2 (hackathon upgrade).** Built on the existing GOLM AI v1.1 app; every v1.1 feature and existing user data are preserved.
+> **Version 1.2.1** adds Live AI on the Vercel website (serverless functions). **Version 1.2 (hackathon upgrade)** Built on the existing GOLM AI v1.1 app; every v1.1 feature and existing user data are preserved.
 > Only enter it in a competition if the organisers allow pre-existing and AI-assisted code.
 > GOLM AI does not hold or move money and is not connected to any bank or Mobile Money provider. It gives educational information, **not financial advice**.
 
@@ -34,9 +34,15 @@ Then open **http://localhost:5173**.
 | Strict TypeScript check | `npm run typecheck` |
 | Production build (into `dist/`) | `npm run build` |
 | Preview the production build | `npm run preview` |
-| Optional live AI server | `npm run server` |
+| Optional local AI server | `npm run server` |
 
-### Optional: live AI coach (Gemini)
+### Live AI coach on the website (Vercel)
+
+The live site uses two Vercel serverless functions in `api/`. You only need to add your key once:
+**Vercel → your project → Settings → Environment Variables → `GEMINI_API_KEY`**, then redeploy.
+Full guide: **`docs/DEPLOY-VERCEL.md`**.
+
+### Optional: live AI coach on your computer (Gemini)
 
 ```powershell
 Copy-Item server\.env.example server\.env
@@ -95,6 +101,7 @@ Unit tests cover the whole financial engine, including money, dates, budgets, fi
 
 | File | Contents |
 |---|---|
+| `docs/DEPLOY-VERCEL.md` | Setting up Live AI on Vercel; why it was unavailable; troubleshooting |
 | `docs/HACKATHON-PITCH.md` | Problem, solution, innovation, 3-minute demo walkthrough, likely judges' questions |
 | `docs/ARCHITECTURE.md` | Architecture, data flow, AI design, calculation formulas |
 | `docs/DEMO-SCRIPT.md` | Step-by-step live demo checklist |
@@ -106,7 +113,8 @@ Unit tests cover the whole financial engine, including money, dates, budgets, fi
 This folder is a complete, separate copy. To update your existing repository:
 1. Copy everything from this folder **except** `node_modules` into your existing `golm-ai-practice` folder, replacing files. Keep your own `server/.env`.
 2. Run `npm install`, `npm test`, `npm run build`.
-3. Then `git add .`, `git commit -m "GOLM AI v1.2"`, `git push`. Vercel redeploys automatically.
+3. In Vercel, add `GEMINI_API_KEY` under **Settings → Environment Variables** (see `docs/DEPLOY-VERCEL.md`).
+4. Then `git add .`, `git commit -m "GOLM AI v1.2.1"`, `git push`. Vercel redeploys automatically and picks up the key.
 
 No Vercel settings need to change (still Vite / `npm run build` / `dist`).
 
